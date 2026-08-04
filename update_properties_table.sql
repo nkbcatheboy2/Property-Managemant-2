@@ -1,6 +1,3 @@
--- Run this ONLY if you already imported database.sql earlier
--- and just need to add the new "properties" table.
-
 USE property_management;
 
 CREATE TABLE IF NOT EXISTS properties (
