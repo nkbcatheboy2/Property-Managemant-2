@@ -1,18 +1,15 @@
 <?php
-// ============================================
-// Authentication Helper Functions
-// ============================================
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Check karo user login hai ya nahi
+
 function is_logged_in() {
     return isset($_SESSION['user_id']);
 }
 
-// Agar login nahi hai to login page pe bhej do
+
 function require_login() {
     if (!is_logged_in()) {
         header("Location: /property-management/login.php");
@@ -20,7 +17,7 @@ function require_login() {
     }
 }
 
-// Specific role hi is page ko access kar sakta hai
+
 function require_role($allowed_roles = []) {
     require_login();
     if (!in_array($_SESSION['role_name'], $allowed_roles)) {
@@ -28,7 +25,7 @@ function require_role($allowed_roles = []) {
     }
 }
 
-// Role ke hisaab se sahi dashboard ka path do
+
 function dashboard_redirect_path($role_name) {
     switch ($role_name) {
         case 'Admin':
