@@ -3,7 +3,7 @@ require_once '../config/db.php';
 require_once '../includes/auth.php';
 require_role(['Admin']);
 
-// Live stats database se
+
 $total = $pdo->query("SELECT COUNT(*) FROM properties")->fetchColumn();
 $lottery = $pdo->query("SELECT COUNT(*) FROM properties WHERE category='Lottery'")->fetchColumn();
 $auction = $pdo->query("SELECT COUNT(*) FROM properties WHERE category='Auction'")->fetchColumn();
