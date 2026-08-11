@@ -1,9 +1,9 @@
 <?php
 require_once '../config/db.php';
 require_once '../includes/auth.php';
-require_login(); // Sabhi logged-in roles dekh sakte hain
+require_login(); 
 
-// Filters
+
 $category_filter = $_GET['category'] ?? '';
 $status_filter    = $_GET['status'] ?? '';
 
