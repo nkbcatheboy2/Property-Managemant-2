@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $image_name = null;
 
-        // Image upload (optional)
+        
         if (!empty($_FILES['image']['name'])) {
             $allowed_ext = ['jpg', 'jpeg', 'png'];
             $ext = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
