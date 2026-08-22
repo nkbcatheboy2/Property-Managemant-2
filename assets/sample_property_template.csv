@@ -1,0 +1,3 @@
+scheme_name,scheme_address,property_no,property_code,address,area_size,property_type,allotment_date,price,category
+Sample Scheme,"Scheme Road, City",P-101,PROP-2026-001,"123 Main Road, City",1200 sq ft,Residential,2026-08-21,2500000,Lottery
+Sample Scheme,"Scheme Road, City",P-102,PROP-2026-002,"124 Main Road, City",1500 sq ft,Shop,,3200000,Auction

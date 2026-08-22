@@ -1,24 +1,22 @@
 <?php
 require_once '../config/db.php';
 require_once '../includes/auth.php';
-require_role(['SO']);
+require_login();
 
-$allowed_categories = get_user_allowed_categories();
-$module_properties = [];
-if (!empty($allowed_categories)) {
-    $placeholders = implode(',', array_fill(0, count($allowed_categories), '?'));
-    $sql = "SELECT id, scheme_name, property_code, status, price FROM properties WHERE category IN ($placeholders) ORDER BY created_at DESC LIMIT 10";
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute($allowed_categories);
-    $module_properties = $stmt->fetchAll();
+if (!user_has_category_access('HRMS')) {
+    die('Access denied: you do not have access to the HRMS module.');
 }
+
+$properties = $pdo->prepare("SELECT id, scheme_name, property_code, address, status, price FROM properties WHERE category = 'HRMS' ORDER BY created_at DESC");
+$properties->execute();
+$properties = $properties->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SO Dashboard</title>
+    <title>HRMS Module</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="../assets/css/style.css" rel="stylesheet">
 </head>
@@ -26,8 +24,8 @@ if (!empty($allowed_categories)) {
 <div class="portal-wrapper">
     <header class="portal-header">
         <div class="portal-brand">
-            <span>🟢</span>
-            <span>SO - Direct Allotment Module</span>
+            <span>👔</span>
+            <span>HRMS / Direct Allotment Module</span>
         </div>
         <div class="portal-header-actions">
             <span class="text-white">Welcome, <?= htmlspecialchars($_SESSION['full_name']) ?></span>
@@ -41,7 +39,7 @@ if (!empty($allowed_categories)) {
             <button type="button" class="sidebar-collapse-button" data-sidebar-target="mainSidebar" aria-label="Hide main navigation"><i class="fas fa-chevron-left"></i></button>
             <div class="portal-sidebar-section">
                 <div class="portal-sidebar-title">Main</div>
-                <a href="so.php" class="portal-nav-item active">📊 Dashboard</a>
+                <a href="<?= dashboard_redirect_path($_SESSION['role_name']) ?>" class="portal-nav-item">📊 Dashboard</a>
                 <a href="properties.php" class="portal-nav-item">📋 All Properties</a>
             </div>
 
@@ -50,22 +48,23 @@ if (!empty($allowed_categories)) {
         <aside class="portal-sidebar portal-sidebar-right" id="moduleSidebar">
             <button type="button" class="sidebar-collapse-button" data-sidebar-target="moduleSidebar" aria-label="Hide modules navigation"><i class="fas fa-chevron-right"></i></button>
             <div class="portal-sidebar-section">
-                <div class="portal-sidebar-title">Module</div>
-                <a href="module_hrms.php" class="portal-nav-item">👔 HRMS / Direct Allotment</a>
+                <div class="portal-sidebar-title">Modules</div>
+                <a href="module_lottery.php" class="portal-nav-item">🎰 Lottery</a>
+                <a href="module_auction.php" class="portal-nav-item">🔨 Auction</a>
+                <a href="module_fcfs.php" class="portal-nav-item">📦 FCFS</a>
+                <a href="module_hrms.php" class="portal-nav-item active">👔 HRMS</a>
             </div>
             </div>
         </aside>
 
         <main class="portal-main">
             <div class="portal-page-header mb-4">
-                <h1 class="portal-page-title">SO Dashboard</h1>
-                <p class="portal-page-subtitle">Manage direct allotment and HRMS-related properties.</p>
+                <h1 class="portal-page-title">HRMS / Direct Allotment</h1>
+                <p class="portal-page-subtitle">Manage HRMS staff and direct allotment properties.</p>
             </div>
 
             <div class="container">
                 <div class="dashboard-shell">
-                    <h5 class="mb-3">HRMS / Direct Allotment Properties</h5>
-                    <a href="module_hrms.php" class="btn btn-sm btn-primary mb-3">Open HRMS Module</a>
                     <div class="table-responsive">
                         <table class="table mb-0">
                             <thead>
@@ -73,20 +72,22 @@ if (!empty($allowed_categories)) {
                                     <th>S.No.</th>
                                     <th>Property ID</th>
                                     <th>Scheme</th>
+                                    <th>Address</th>
                                     <th>Status</th>
                                     <th>Price</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php if (empty($module_properties)): ?>
-                                    <tr><td colspan="6" class="text-center text-muted">No properties are assigned to this account.</td></tr>
+                                <?php if (empty($properties)): ?>
+                                    <tr><td colspan="7" class="text-center text-muted">No HRMS properties are available.</td></tr>
                                 <?php endif; ?>
-                                <?php foreach ($module_properties as $serial => $item): ?>
+                                <?php foreach ($properties as $serial => $item): ?>
                                     <tr>
                                     <td><?= $serial + 1 ?></td>
                                         <td><?= htmlspecialchars($item['property_code']) ?></td>
                                         <td><?= htmlspecialchars($item['scheme_name']) ?></td>
+                                        <td><?= htmlspecialchars($item['address']) ?></td>
                                         <td><?= htmlspecialchars($item['status']) ?></td>
                                         <td>INR <?= number_format($item['price'], 2) ?></td>
                                         <td><a href="property_detail.php?id=<?= $item['id'] ?>" class="btn btn-sm btn-primary">Open</a></td>

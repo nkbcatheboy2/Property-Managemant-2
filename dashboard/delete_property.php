@@ -6,7 +6,7 @@ require_role(['Admin', 'Property Officer']);
 $id = $_GET['id'] ?? null;
 
 if ($id) {
-    
+    // Pehle image ka naam nikal lo taaki file bhi delete kar sakein
     $stmt = $pdo->prepare("SELECT image FROM properties WHERE id = ?");
     $stmt->execute([$id]);
     $property = $stmt->fetch();
