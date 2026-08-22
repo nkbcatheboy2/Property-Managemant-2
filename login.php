@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'] ?? '';
 
     if ($username === '' || $password === '') {
-        $error = "Username aur password dono bharna zaroori hai.";
+        $error = "Username and password are required.";
     } else {
         $stmt = $pdo->prepare(
             "SELECT users.*, roles.role_name
@@ -29,22 +29,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($user && password_verify($password, $user['password'])) {
 
             if ($user['status'] !== 'active') {
-                $error = "Aapka account inactive hai. Admin se contact karein.";
+                $error = "Your account is inactive. Please contact an administrator.";
             } else {
                 // Session set karo
                 $_SESSION['user_id']   = $user['id'];
                 $_SESSION['full_name'] = $user['full_name'];
                 $_SESSION['role_name'] = $user['role_name'];
 
-                // Login log save karo
-                $log = $pdo->prepare("INSERT INTO login_logs (user_id, ip_address) VALUES (?, ?)");
-                $log->execute([$user['id'], $_SERVER['REMOTE_ADDR'] ?? '']);
+                try {
+                    $log = $pdo->prepare("INSERT INTO login_logs (user_id, ip_address) VALUES (?, ?)");
+                    $log->execute([$user['id'], $_SERVER['REMOTE_ADDR'] ?? '']);
+                } catch (PDOException $logError) {
+                    // Authentication remains successful when optional logging is unavailable.
+                }
 
                 header("Location: " . dashboard_redirect_path($user['role_name']));
                 exit;
             }
         } else {
-            $error = "Galat username ya password.";
+            $error = "Invalid username or password.";
         }
     }
 }
@@ -55,29 +58,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <title>Login - Property Management System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            background: #f4f6f9;
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .login-card {
-            width: 100%;
-            max-width: 400px;
-            padding: 2rem;
-            background: #fff;
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-        }
-    </style>
+    <link href="assets/css/style.css" rel="stylesheet">
 </head>
-<body>
+<body class="d-flex align-items-center justify-content-center">
 
-<div class="login-card">
-    <h4 class="text-center mb-1">Property Management System</h4>
-    <p class="text-center text-muted mb-4">Login to your account</p>
+<div class="login-card text-center">
+    <a href="index.php" class="login-home-link"><i class="fas fa-arrow-left me-2"></i>Back to Home</a>
+    <div class="brand-mark">PM</div>
+    <h4 class="mb-1">Property Management System</h4>
+    <p class="text-muted mb-4">Login to your account</p>
 
     <?php if ($error): ?>
         <div class="alert alert-danger py-2"><?= htmlspecialchars($error) ?></div>

@@ -47,16 +47,32 @@ property-management/
 └── database.sql
 ```
 
-## Property Module (NEW)
-- **Add Property:** `dashboard/add_property.php` (Admin + Property Officer)
-- **Property List:** `dashboard/properties.php` (sabhi roles dekh sakte hain, filter bhi hai)
+## Property Module
+- **Add Property:** `dashboard/add_property.php` (Admin + Property Officer) — fields: Scheme Name, Property No, Property ID (unique), Address, Area, Price, Category, Image
+- **Property List:** `dashboard/properties.php` — user ko sirf wahi categories dikhengi jinki use admin ne permission di hai
+- **Property Detail:** `dashboard/property_detail.php` — poori detail + allottee info ek jagah
 - **Edit/Delete:** sirf Admin + Property Officer
-- Agar aapne pehle se database import kar rakha hai, sirf `update_properties_table.sql`
-  ko phpMyAdmin me import kar dena — isse naya `properties` table ban jayega.
-- Images `assets/uploads/properties/` folder me save hoti hain.
+- **Import from Excel/CSV:** `dashboard/import_properties.php` — Excel file ko pehle CSV me save karke upload karo. Sample template link page ke andar hi milega.
+
+## Allottee Module (jab property allot ho jaye)
+- `dashboard/add_allottee.php` — Allottee Name, Father's Name, Mobile, Aadhar No, PAN No, Address,
+  Aadhar Photo, PAN Photo, Allotment Date. Property Detail page se yaha jaya ja sakta hai.
+- Allottee add karte hi property ka status apne aap "Allotted" ho jata hai.
+
+## Permission System (kaun kya dekh sakta hai)
+- Admin ko hamesha **sab kuch** dikhta hai (Lottery, Auction, FCFS, Direct Allotment — sab).
+- Baaki sabhi roles (Property Officer, LDA, UDC, SO) ke liye Admin decide karta hai
+  ki unko kaunsi category dikhegi — ye `dashboard/manage_users.php` se set hota hai
+  (naya user banate waqt ya `edit_permissions.php` se baad me bhi badla ja sakta hai).
+- Agar kisi user ko koi permission nahi di gayi, to use property list access nahi milega
+  jab tak Admin permission na de.
+
+## Database Update (agar pehle se purana database.sql import kiya tha)
+`update_v2.sql` file ko phpMyAdmin me import karein — isse:
+- `properties` table naye structure me convert hogi (agar isme purana data tha to pehle backup le lein)
+- `allottees` aur `user_permissions` naye tables ban jayenge
 
 ## Next Steps (aage kya banega)
-- Admin se naya user create karne ka page
-- Har role ka apna specific workflow (Lottery draw, Auction bidding, FCFS booking)
-- Change password feature
-- Reports module
+- Change Password feature
+- Lottery draw process, Auction bidding, FCFS booking queue
+- Reports / Export module
