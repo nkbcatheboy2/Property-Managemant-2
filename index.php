@@ -2,7 +2,7 @@
 session_start();
 require_once 'config/db.php';
 
-// Fetch announcements
+
 $stmt = $pdo->prepare("SELECT * FROM public_announcements WHERE is_active = 1 AND (start_date IS NULL OR start_date <= CURDATE()) AND (end_date IS NULL OR end_date >= CURDATE()) ORDER BY id DESC LIMIT 5");
 $stmt->execute();
 $announcements = $stmt->fetchAll();
