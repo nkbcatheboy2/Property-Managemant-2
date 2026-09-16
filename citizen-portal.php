@@ -22,7 +22,7 @@ $pdo->exec("CREATE TABLE IF NOT EXISTS citizen_requests (
 try {
     $pdo->exec("ALTER TABLE citizen_requests MODIFY request_type ENUM('Mutation','KYC','NOC','Surrender') NOT NULL");
 } catch (PDOException $exception) {
-    // The table may already have the current enum definition.
+    
 }
 
 $phone = $_SESSION['citizen_phone'];
@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if ($campaign_id > 0) {
-        // Campaign applications are handled above; do not process the property service form.
+        
     } else {
     $property_id = (int) ($_POST['property_id'] ?? 0);
     $request_type = $_POST['request_type'] ?? '';
