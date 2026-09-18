@@ -2,7 +2,7 @@
 require_once 'config/db.php';
 require_once 'includes/auth.php';
 
-// Agar already login hai to seedha dashboard bhej do
+
 if (is_logged_in()) {
     header("Location: " . dashboard_redirect_path($_SESSION['role_name']));
     exit;
