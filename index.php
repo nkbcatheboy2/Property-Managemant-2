@@ -24,7 +24,7 @@ if (empty($announcements)) {
     ];
 }
 
-// Fetch FAQs for homepage
+
 $stmt = $pdo->prepare("SELECT * FROM faqs WHERE is_active = 1 LIMIT 6");
 $stmt->execute();
 $faqs = $stmt->fetchAll();
@@ -54,7 +54,7 @@ if (empty($faqs)) {
     ];
 }
 
-// Get system settings
+
 $stmt = $pdo->prepare("SELECT setting_key, setting_value FROM system_settings");
 $stmt->execute();
 $settings = [];
