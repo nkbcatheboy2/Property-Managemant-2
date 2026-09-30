@@ -1,54 +1,18 @@
-
-CREATE DATABASE IF NOT EXISTS property_management;
+CREATE DATABASE IF NOT EXISTS property_management CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE property_management;
-
-
-CREATE TABLE roles (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    role_name VARCHAR(50) NOT NULL UNIQUE
-);
-
-INSERT INTO roles (role_name) VALUES
-('Admin'),
-('Property Officer'),
-('LDA'),
-('UDC'),
-('SO');
-
-
-CREATE TABLE users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    full_name VARCHAR(100) NOT NULL,
-    username VARCHAR(50) NOT NULL UNIQUE,
-    email VARCHAR(100) UNIQUE,
-    password VARCHAR(255) NOT NULL,
-    role_id INT NOT NULL,
-    status ENUM('active','inactive') DEFAULT 'active',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (role_id) REFERENCES roles(id)
-);
-
-
-CREATE TABLE login_logs (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    login_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    ip_address VARCHAR(45),
-    FOREIGN KEY (user_id) REFERENCES users(id)
-);
-
-
-CREATE TABLE properties (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    property_title VARCHAR(150) NOT NULL,
-    location VARCHAR(200) NOT NULL,
-    area_size VARCHAR(50),                
-    price DECIMAL(15,2) NOT NULL,
-    category ENUM('Lottery','Auction','FCFS','Direct Allotment') NOT NULL,
-    status ENUM('Available','Pending','Sold','Allotted') DEFAULT 'Available',
-    description TEXT,
-    image VARCHAR(255),                  
-    added_by INT NOT NULL,                 
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (added_by) REFERENCES users(id)
-);
+CREATE TABLE IF NOT EXISTS roles (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(60) UNIQUE NOT NULL);
+INSERT IGNORE INTO roles (name) VALUES ('Admin'),('Property Officer'),('LDA'),('UDC'),('SO');
+CREATE TABLE IF NOT EXISTS users (id INT AUTO_INCREMENT PRIMARY KEY, full_name VARCHAR(120) NOT NULL, username VARCHAR(80) UNIQUE NOT NULL, email VARCHAR(160) NOT NULL, password VARCHAR(255) NOT NULL, role_id INT NOT NULL, status ENUM('Active','Inactive') DEFAULT 'Active', created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY(role_id) REFERENCES roles(id));
+CREATE TABLE IF NOT EXISTS login_logs (id BIGINT AUTO_INCREMENT PRIMARY KEY, user_id INT NULL, username VARCHAR(80), ip_address VARCHAR(45), logged_in_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE SET NULL);
+CREATE TABLE IF NOT EXISTS properties (id INT AUTO_INCREMENT PRIMARY KEY, scheme_name VARCHAR(160) NOT NULL, property_no VARCHAR(80) NOT NULL, property_code VARCHAR(80) UNIQUE NOT NULL, address TEXT NOT NULL, area_size DECIMAL(12,2) DEFAULT 0, price DECIMAL(14,2) DEFAULT 0, category ENUM('Lottery','Auction','FCFS','Direct Allotment') NOT NULL, status ENUM('Available','Pending','Sold','Allotted') DEFAULT 'Available', description TEXT, image VARCHAR(255), added_by INT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, INDEX(category), INDEX(status), FOREIGN KEY(added_by) REFERENCES users(id) ON DELETE SET NULL);
+CREATE TABLE IF NOT EXISTS allottees (id INT AUTO_INCREMENT PRIMARY KEY, property_id INT NOT NULL UNIQUE, allottee_name VARCHAR(120) NOT NULL, father_name VARCHAR(120), mobile VARCHAR(20) NOT NULL, aadhar_no VARCHAR(20), pan_no VARCHAR(20), aadhar_photo VARCHAR(255), pan_photo VARCHAR(255), address TEXT, allotment_date DATE, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY(property_id) REFERENCES properties(id) ON DELETE CASCADE, INDEX(mobile));
+CREATE TABLE IF NOT EXISTS user_permissions (id INT AUTO_INCREMENT PRIMARY KEY, user_id INT NOT NULL, category ENUM('Lottery','Auction','FCFS','Direct Allotment') NOT NULL, UNIQUE KEY user_category(user_id,category), FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE);
+CREATE TABLE IF NOT EXISTS citizens (id INT AUTO_INCREMENT PRIMARY KEY, phone VARCHAR(20) UNIQUE NOT NULL, full_name VARCHAR(120), verified_at TIMESTAMP NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE IF NOT EXISTS online_applications (id INT AUTO_INCREMENT PRIMARY KEY, citizen_id INT NULL, application_type VARCHAR(80), status VARCHAR(40) DEFAULT 'Submitted', submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY(citizen_id) REFERENCES citizens(id) ON DELETE SET NULL);
+CREATE TABLE IF NOT EXISTS citizen_requests (id INT AUTO_INCREMENT PRIMARY KEY, reference_no VARCHAR(40) UNIQUE NOT NULL, citizen_id INT NOT NULL, property_id INT NOT NULL, service_type ENUM('Mutation','KYC Update') NOT NULL, details TEXT, status VARCHAR(40) DEFAULT 'Submitted', submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY(citizen_id) REFERENCES citizens(id) ON DELETE CASCADE, FOREIGN KEY(property_id) REFERENCES properties(id) ON DELETE CASCADE);
+CREATE TABLE IF NOT EXISTS grievances (id INT AUTO_INCREMENT PRIMARY KEY, citizen_id INT NULL, subject VARCHAR(160), message TEXT, status VARCHAR(40) DEFAULT 'Open', created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE IF NOT EXISTS property_payments (id INT AUTO_INCREMENT PRIMARY KEY, property_id INT NOT NULL, amount DECIMAL(14,2) NOT NULL, payment_date DATE NOT NULL, reference_no VARCHAR(80), notes TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY(property_id) REFERENCES properties(id) ON DELETE CASCADE);
+CREATE TABLE IF NOT EXISTS system_settings (setting_key VARCHAR(80) PRIMARY KEY, setting_value TEXT NOT NULL);
+INSERT INTO system_settings VALUES ('portal_name','LDA Property Portal'),('portal_contact_email','support@lda-portal.gov.in'),('portal_contact_phone',''),('helpline_number','180018005001'),('otp_validity_minutes','10'),('max_otp_attempts','5') ON DUPLICATE KEY UPDATE setting_key=VALUES(setting_key);
+CREATE TABLE IF NOT EXISTS public_announcements (id INT AUTO_INCREMENT PRIMARY KEY, title VARCHAR(200), content TEXT, active TINYINT DEFAULT 1, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE IF NOT EXISTS faqs (id INT AUTO_INCREMENT PRIMARY KEY, question VARCHAR(255), answer TEXT, active TINYINT DEFAULT 1);
