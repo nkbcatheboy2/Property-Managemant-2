@@ -1,9 +1,200 @@
-<?php require_once __DIR__.'/includes/auth.php'; $announcements=[];$faqs=[]; try{$announcements=db()->query("SELECT * FROM public_announcements WHERE active=1 ORDER BY created_at DESC LIMIT 4")->fetchAll();$faqs=db()->query("SELECT * FROM faqs WHERE active=1 LIMIT 6")->fetchAll();}catch(Throwable $e){} if(!$announcements)$announcements=[['title'=>'Property services are now available online','content'=>'Search LDA properties and submit citizen service requests from one secure portal.']]; if(!$faqs)$faqs=[['question'=>'How do I find my allotted property?','answer'=>'Use Citizen Login with your verified mobile number to view linked properties.'],['question'=>'What is the demo OTP?','answer'=>'This local development portal uses 111000 and does not send SMS.']]; ?>
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title><?=e(setting('portal_name','LDA Property Portal'))?></title><link rel="stylesheet" href="assets/css/style.css"></head><body>
-<div class="utility"><div class="inner"><span>Helpline: <strong><?=e(setting('helpline_number','180018005001'))?></strong> &nbsp; | &nbsp; <?=e(public_email())?></span><span>हिंदी &nbsp; English</span></div></div><nav class="navbar"><div class="nav-inner"><a class="brand" href="index.php">LDA <span>PROPERTY PORTAL</span></a><div class="navlinks"><a href="#services">Services</a><a href="#announcements">Announcements</a><a href="#faq">FAQ</a><a href="contact.php">Contact</a></div><a class="btn btn-secondary" href="login.php">Officer Login</a></div></nav>
-<header class="hero"><div class="container"><div class="eyebrow">Lucknow Development Authority</div><h1>Property services, made clear.</h1><p>Find property information, manage allotment records and access citizen services through one trusted LDA portal.</p><div class="hero-actions"><a class="btn btn-primary" href="#search">Search Property</a><button class="btn btn-outline" data-bs-toggle="modal" data-bs-target="#citizenModal">Citizen Login</button></div></div></header>
-<main><section class="section" id="services"><div class="container"><div class="section-head"><div><div class="eyebrow">Quick access</div><h2>What do you need today?</h2></div></div><div class="service-grid"><a class="service" href="#search"><span class="icon">⌕</span><strong>Property Search</strong><small>Check LDA records</small></a><a class="service" href="#citizen"><span class="icon">↗</span><strong>Mutation Application</strong><small>Apply online</small></a><a class="service" href="#citizen"><span class="icon">✓</span><strong>NOC Request</strong><small>Start a request</small></a><a class="service" href="#citizen"><span class="icon">₹</span><strong>Online Payment</strong><small>View payment ledger</small></a><a class="service" href="contact.php"><span class="icon">!</span><strong>File Grievance</strong><small>Reach our team</small></a><a class="service" href="#citizen"><span class="icon">○</span><strong>Citizen Portal</strong><small>Sign in securely</small></a></div></div></section>
-<section class="section" id="announcements"><div class="container two-col"><div><div class="eyebrow">From LDA</div><h2>Latest announcements</h2><?php foreach($announcements as $a):?><article class="announcement"><h3><?=e($a['title'])?></h3><p><?=e($a['content'])?></p></article><?php endforeach;?></div><div class="notice"><div class="eyebrow">Important notice</div><h3>Keep your contact details current</h3><p class="muted">Citizens must use the mobile number registered with their allottee record to view property services.</p><a href="#citizen" class="btn btn-secondary">Open Citizen Portal</a></div></div></section>
-<section class="section" id="faq"><div class="container"><div class="eyebrow">Need to know</div><h2>Frequently asked questions</h2><div class="two-col"><div><?php foreach($faqs as $f):?><details class="faq"><summary><strong><?=e($f['question'])?></strong></summary><p><?=e($f['answer'])?></p></details><?php endforeach;?></div><div class="notice"><h3>Need assistance?</h3><p class="muted">Our support team is available during office hours for portal and property-record queries.</p><a href="contact.php" class="btn btn-outline">Contact LDA</a></div></div></div></section></main>
-<footer class="footer"><div class="container"><strong>LDA Property Portal</strong><p>Lucknow Development Authority &nbsp; | &nbsp; Helpline <?=e(public_phone())?> &nbsp; | &nbsp; <?=e(public_email())?></p><small>Official citizen services portal</small></div></footer>
-<div class="modal" id="citizenModal" hidden><div class="modal-dialog"><div class="form-card"><button type="button" class="modal-close" data-close>×</button><div class="eyebrow">Citizen access</div><h2>Sign in to your property record</h2><p class="muted">Demo mode: no SMS is sent. Use OTP <strong>111000</strong>.</p><form id="otpForm"><label class="form-label">Mobile number</label><input class="form-control" name="phone" required pattern="(?:\\+91)?[6-9][0-9]{9}" placeholder="10-digit mobile number"><input type="hidden" name="action" value="request"><button class="btn btn-secondary" type="submit">Send demo OTP</button><div id="otpStep" hidden><label class="form-label">Demo OTP</label><input class="form-control" name="otp" inputmode="numeric" maxlength="6"><button class="btn btn-primary" type="button" id="verifyOtp">Verify and continue</button></div><p id="otpMessage" class="alert" hidden></p></form></div></div></div><script>const modal=document.querySelector('.modal');document.querySelectorAll('[data-bs-toggle]').forEach(b=>b.onclick=()=>modal.hidden=false);document.querySelector('[data-close]').onclick=()=>modal.hidden=true;const form=document.querySelector('#otpForm'),msg=document.querySelector('#otpMessage');form.onsubmit=async e=>{e.preventDefault();const r=await fetch('api/citizen-otp.php',{method:'POST',body:new FormData(form)});const d=await r.json();msg.hidden=false;msg.textContent=d.message;if(d.success)document.querySelector('#otpStep').hidden=false};document.querySelector('#verifyOtp').onclick=async()=>{const fd=new FormData(form);fd.set('action','verify');const r=await fetch('api/citizen-otp.php',{method:'POST',body:fd});const d=await r.json();if(d.success)location='citizen-portal.php';else{msg.hidden=false;msg.textContent=d.message}};</script></body></html>
+<?php 
+require_once __DIR__ . '/includes/auth.php'; 
+
+$announcements = [];
+$faqs = []; 
+
+try {
+    $announcements = db()->query("SELECT * FROM public_announcements WHERE active=1 ORDER BY created_at DESC LIMIT 4")->fetchAll();
+    $faqs = db()->query("SELECT * FROM faqs WHERE active=1 LIMIT 6")->fetchAll();
+} catch (Throwable $e) {
+} 
+
+if (!$announcements) {
+    $announcements = [
+        [
+            'title' => 'Property services are now available online',
+            'content' => 'Search LDA properties and submit citizen service requests from one secure portal.'
+        ]
+    ];
+} 
+
+if (!$faqs) {
+    $faqs = [
+        [
+            'question' => 'How do I find my allotted property?',
+            'answer' => 'Use Citizen Login with your verified mobile number to view linked properties.'
+        ],
+        [
+            'question' => 'What is the demo OTP?',
+            'answer' => 'This local development portal uses 111000 and does not send SMS.'
+        ]
+    ];
+} 
+?>
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><?= e(setting('portal_name', 'LDA Property Portal')) ?></title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <div class="utility">
+        <div class="inner">
+            <span>Helpline: <strong><?= e(setting('helpline_number', '180018005001')) ?></strong> &nbsp; | &nbsp; <?= e(public_email()) ?></span>
+            <span>हिंदी &nbsp; English</span>
+        </div>
+    </div>
+    
+    <nav class="navbar">
+        <div class="nav-inner">
+            <a class="brand" href="index.php">LDA <span>PROPERTY PORTAL</span></a>
+            <div class="navlinks">
+                <a href="#services">Services</a>
+                <a href="#announcements">Announcements</a>
+                <a href="#faq">FAQ</a>
+                <a href="contact.php">Contact</a>
+            </div>
+            <a class="btn btn-secondary" href="login.php">Officer Login</a>
+        </div>
+    </nav>
+    
+    <header class="hero">
+        <div class="container">
+            <div class="eyebrow">Lucknow Development Authority</div>
+            <h1>Property services, made clear.</h1>
+            <p>Find property information, manage allotment records and access citizen services through one trusted LDA portal.</p>
+            <div class="hero-actions">
+                <a class="btn btn-primary" href="#search">Search Property</a>
+                <button class="btn btn-outline" data-bs-toggle="modal" data-bs-target="#citizenModal">Citizen Login</button>
+            </div>
+        </div>
+    </header>
+    
+    <main>
+        <section class="section" id="services">
+            <div class="container">
+                <div class="section-head">
+                    <div>
+                        <div class="eyebrow">Quick access</div>
+                        <h2>What do you need today?</h2>
+                    </div>
+                </div>
+                <div class="service-grid">
+                    <a class="service" href="#search"><span class="icon">⌕</span><strong>Property Search</strong><small>Check LDA records</small></a>
+                    <a class="service" href="#citizen"><span class="icon">↗</span><strong>Mutation Application</strong><small>Apply online</small></a>
+                    <a class="service" href="#citizen"><span class="icon">✓</span><strong>NOC Request</strong><small>Start a request</small></a>
+                    <a class="service" href="#citizen"><span class="icon">₹</span><strong>Online Payment</strong><small>View payment ledger</small></a>
+                    <a class="service" href="contact.php"><span class="icon">!</span><strong>File Grievance</strong><small>Reach our team</small></a>
+                    <a class="service" href="#citizen"><span class="icon">○</span><strong>Citizen Portal</strong><small>Sign in securely</small></a>
+                </div>
+            </div>
+        </section>
+        
+        <section class="section" id="announcements">
+            <div class="container two-col">
+                <div>
+                    <div class="eyebrow">From LDA</div>
+                    <h2>Latest announcements</h2>
+                    <?php foreach ($announcements as $a): ?>
+                        <article class="announcement">
+                            <h3><?= e($a['title']) ?></h3>
+                            <p><?= e($a['content']) ?></p>
+                        </article>
+                    <?php endforeach; ?>
+                </div>
+                <div class="notice">
+                    <div class="eyebrow">Important notice</div>
+                    <h3>Keep your contact details current</h3>
+                    <p class="muted">Citizens must use the mobile number registered with their allottee record to view property services.</p>
+                    <a href="#citizen" class="btn btn-secondary">Open Citizen Portal</a>
+                </div>
+            </div>
+        </section>
+        
+        <section class="section" id="faq">
+            <div class="container">
+                <div class="eyebrow">Need to know</div>
+                <h2>Frequently asked questions</h2>
+                <div class="two-col">
+                    <div>
+                        <?php foreach ($faqs as $f): ?>
+                            <details class="faq">
+                                <summary><strong><?= e($f['question']) ?></strong></summary>
+                                <p><?= e($f['answer']) ?></p>
+                            </details>
+                        <?php endforeach; ?>
+                    </div>
+                    <div class="notice">
+                        <h3>Need assistance?</h3>
+                        <p class="muted">Our support team is available during office hours for portal and property-record queries.</p>
+                        <a href="contact.php" class="btn btn-outline">Contact LDA</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <footer class="footer">
+        <div class="container">
+            <strong>LDA Property Portal</strong>
+            <p>Lucknow Development Authority &nbsp; | &nbsp; Helpline <?= e(public_phone()) ?> &nbsp; | &nbsp; <?= e(public_email()) ?></p>
+            <small>Official citizen services portal</small>
+        </div>
+    </footer>
+    
+    <div class="modal" id="citizenModal" hidden>
+        <div class="modal-dialog">
+            <div class="form-card">
+                <button type="button" class="modal-close" data-close>×</button>
+                <div class="eyebrow">Citizen access</div>
+                <h2>Sign in to your property record</h2>
+                <p class="muted">Demo mode: no SMS is sent. Use OTP <strong>111000</strong>.</p>
+                <form id="otpForm">
+                    <label class="form-label">Mobile number</label>
+                    <input class="form-control" name="phone" required pattern="(?:\+91)?[6-9][0-9]{9}" placeholder="10-digit mobile number">
+                    <input type="hidden" name="action" value="request">
+                    <button class="btn btn-secondary" type="submit">Send demo OTP</button>
+                    <div id="otpStep" hidden>
+                        <label class="form-label">Demo OTP</label>
+                        <input class="form-control" name="otp" inputmode="numeric" maxlength="6">
+                        <button class="btn btn-primary" type="button" id="verifyOtp">Verify and continue</button>
+                    </div>
+                    <p id="otpMessage" class="alert" hidden></p>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const modal = document.querySelector('.modal');
+        document.querySelectorAll('[data-bs-toggle]').forEach(b => b.onclick = () => modal.hidden = false);
+        document.querySelector('[data-close]').onclick = () => modal.hidden = true;
+        
+        const form = document.querySelector('#otpForm'), msg = document.querySelector('#otpMessage');
+        
+        form.onsubmit = async e => {
+            e.preventDefault();
+            const r = await fetch('api/citizen-otp.php', { method: 'POST', body: new FormData(form) });
+            const d = await r.json();
+            msg.hidden = false;
+            msg.textContent = d.message;
+            if (d.success) document.querySelector('#otpStep').hidden = false;
+        };
+        
+        document.querySelector('#verifyOtp').onclick = async () => {
+            const fd = new FormData(form);
+            fd.set('action', 'verify');
+            const r = await fetch('api/citizen-otp.php', { method: 'POST', body: fd });
+            const d = await r.json();
+            if (d.success) location = 'citizen-portal.php';
+            else {
+                msg.hidden = false;
+                msg.textContent = d.message;
+            }
+        };
+    </script>
+</body>
+</html>
